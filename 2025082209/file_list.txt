@@ -1,0 +1,1 @@
+apps/admin/view/default/js/cropper-integration.js

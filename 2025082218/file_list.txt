@@ -1,0 +1,7 @@
+apps/admin/controller/content/AiController.php
+apps/admin/view/default/common/foot.html
+apps/admin/view/default/content/content.html
+apps/admin/view/default/css/comm.css
+apps/admin/view/default/js/ai-assistant.js
+apps/admin/view/default/system/config.html
+apps/common/route.php
