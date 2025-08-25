@@ -1,0 +1,3 @@
+apps/admin/controller/system/UpgradeController.php
+apps/admin/view/default/system/upgrade.html
+generate_file_list.py
