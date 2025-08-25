@@ -1,0 +1,6 @@
+apps/admin/controller/system/UpgradeController.php
+apps/admin/view/default/system/upgrade.html
+script/UPDATE_CREATOR_README.md
+script/create_update.py
+script/pyproject.toml
+script/uv.lock

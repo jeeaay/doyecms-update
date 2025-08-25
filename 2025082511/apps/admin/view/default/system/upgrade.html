@@ -1,0 +1,547 @@
+{include file='common/head.html'}
+
+<style>
+    .patch-table { margin-top: 20px; }
+    .status-applied { color: #5FB878; }
+    .status-pending { color: #FF5722; }
+    .status-disabled { color: #C9C9C9; }
+    .update-info { background: #f8f8f8; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+    .btn-group { margin-top: 20px; }
+    .loading { display: none; }
+    
+    /* 新增样式 */
+    .download-progress {
+        margin-top: 20px;
+        display: none;
+        background: #f8f8f8;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 4px solid #1E9FFF;
+    }
+    .progress-bar {
+        width: 100%;
+        height: 20px;
+        background-color: #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #1E9FFF, #5FB878);
+        width: 0%;
+        transition: width 0.3s ease;
+        border-radius: 10px;
+    }
+    .file-list {
+        max-height: 200px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #e6e6e6;
+        border-radius: 3px;
+        margin-top: 10px;
+    }
+    .file-item {
+        padding: 8px 12px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .file-item:last-child {
+        border-bottom: none;
+    }
+    .file-status {
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 3px;
+    }
+    .file-status.waiting {
+        background: #f0f0f0;
+        color: #666;
+    }
+    .file-status.downloading {
+        background: #1E9FFF;
+        color: white;
+    }
+    .file-status.completed {
+        background: #5FB878;
+        color: white;
+    }
+    .file-status.error {
+        background: #FF5722;
+        color: white;
+    }
+</style>
+<div class="layui-body">
+    <div class="layui-tab layui-tab-brief" lay-filter="tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="t1">系统更新管理</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                        
+                        <!-- 更新说明 -->
+                        <div class="update-info">
+                            <h3>更新说明</h3>
+                            <p>• 系统使用GitHub/Gitee仓库提供补丁更新服务</p>
+                            <p>• 补丁必须按版本顺序安装，不能跳版本</p>
+                            <p>• 安装前会自动备份现有文件</p>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div class="btn-group">
+                            <button class="layui-btn" id="checkUpdate">
+                                <i class="layui-icon layui-icon-refresh"></i> 检查更新
+                            </button>
+                        </div>
+
+                        <!-- 加载提示 -->
+                        <div class="loading">
+                            <div class="layui-elem-quote">
+                                <i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i>
+                                正在检查更新，请稍候...
+                            </div>
+                        </div>
+
+                        <!-- 补丁列表 -->
+                        <div class="patch-table">
+                            <table class="layui-table" lay-skin="line">
+                                <thead>
+                                    <tr>
+                                        <th>版本号</th>
+                                        <th>更新时间</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patchList">
+                                    {if(isset($patches) && $patches)}
+                    {foreach $patches(key,value)}
+                    <tr>
+                        <td>[value->version]</td>
+                        <td>[value->update_time]</td>
+                        <td>
+                            {if($value->status == 'installed')}
+                            <span class="status-applied">已安装</span>
+                            {else}
+                            <span class="status-pending">未安装</span>
+                            {/if}
+                        </td>
+                        <td>
+                            {if($value->status == 'installed')}
+                            <span class="layui-btn layui-btn-xs layui-btn-disabled">已安装</span>
+                            {else}
+                                {if($value->can_install)}
+                                <button class="layui-btn layui-btn-xs install-btn" data-version="[value->version]">
+                                    <i class="layui-icon layui-icon-download-circle"></i> 安装
+                                </button>
+                                {else}
+                                <span class="layui-btn layui-btn-xs layui-btn-disabled status-disabled">需按顺序安装</span>
+                                {/if}
+                            {/if}
+                        </td>
+                    </tr>
+                    {/foreach}
+                    {else}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #999;">暂无补丁信息，请点击"检查更新"</td>
+                    </tr>
+                    {/if}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 下载进度 -->
+                        <div class="download-progress" id="downloadProgress">
+                            <h4><i class="layui-icon layui-icon-download-circle"></i> 正在下载更新文件</h4>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span id="progressText">准备下载...</span>
+                                <span id="progressPercent">0%</span>
+                            </div>
+                            <div class="file-list" id="fileList"></div>
+                        </div>
+
+                        <!-- 更新日志 -->
+                        <div id="updateLog" style="margin-top: 20px; display: none;">
+                            <div class="layui-card">
+                                <div class="layui-card-header">更新日志</div>
+                                <div class="layui-card-body">
+                                    <div id="logContent" style="max-height: 300px; overflow-y: auto; background: #f8f8f8; padding: 10px; font-family: monospace;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+{include file='common/foot.html'}
+<script>
+    layui.use(['layer', 'element'], function(){
+            var layer = layui.layer;
+            var element = layui.element;
+            
+            // 页面加载后自动检查更新
+            $(document).ready(function(){
+                checkUpdateFromServer();
+            });
+            
+            // 检查更新
+            $('#checkUpdate').click(function(){
+                var btn = $(this);
+                btn.addClass('layui-btn-disabled').prop('disabled', true);
+                $('.loading').show();
+                
+                // 直接调用检查更新功能
+                checkUpdateFromServer();
+            });
+            
+            // 从服务器检查更新
+            function checkUpdateFromServer() {
+                $.ajax({
+                    url: '?p=/Upgrade/check',
+                    type: 'POST',
+                    data: {
+                        formcheck: '{$formcheck}'
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        $('.loading').hide();
+                        $('#checkUpdate').removeClass('layui-btn-disabled').prop('disabled', false);
+                        
+                        if (response.code == 1) {
+                            if (typeof response.data === 'string') {
+                                // 没有新更新，不弹出消息
+                                updatePatchList([]);
+                            } else {
+                                // 有新更新
+                                updatePatchList(response.data);
+                                // 统计未安装的补丁数量
+                                var uninstalledCount = 0;
+                                response.data.forEach(function(patch) {
+                                    if (patch.status !== 'installed') {
+                                        uninstalledCount++;
+                                    }
+                                });
+                                if (uninstalledCount > 0) {
+                                    layer.msg('发现 ' + uninstalledCount + ' 个未安装更新', {icon: 1});
+                                }
+                            }
+                        } else {
+                            layer.msg(response.data || '检查更新失败', {icon: 2});
+                        }
+                    },
+                    error: function() {
+                        $('.loading').hide();
+                        $('#checkUpdate').removeClass('layui-btn-disabled').prop('disabled', false);
+                        layer.msg('网络错误，请检查网络连接', {icon: 2});
+                    }
+                });
+            }
+            
+            // 全局变量存储补丁列表
+            var globalPatches = [];
+            
+            // 更新补丁列表
+            function updatePatchList(patches) {
+                // 保存到全局变量
+                globalPatches = patches || [];
+                
+                var html = '';
+                if (patches && patches.length > 0) {
+                    patches.forEach(function(patch) {
+                        var statusHtml = patch.status == 'installed' ? 
+                            '<span class="status-applied">已安装</span>' : 
+                            '<span class="status-pending">未安装</span>';
+                        
+                        var actionHtml = '';
+                        if (patch.status == 'installed') {
+                            actionHtml = '<span class="layui-btn layui-btn-xs layui-btn-disabled">已安装</span>';
+                        } else if (patch.can_install) {
+                            actionHtml = '<button class="layui-btn layui-btn-xs install-btn" data-version="' + patch.version + '">' +
+                                        '<i class="layui-icon layui-icon-download-circle"></i> 安装</button>';
+                        } else {
+                            actionHtml = '<span class="layui-btn layui-btn-xs layui-btn-disabled status-disabled">需按顺序安装</span>';
+                        }
+                        
+                        html += '<tr>' +
+                               '<td>' + patch.version + '</td>' +
+                               '<td>' + patch.update_time + '</td>' +
+                               '<td>' + statusHtml + '</td>' +
+                               '<td>' + actionHtml + '</td>' +
+                               '</tr>';
+                    });
+                } else {
+                    html = '<tr><td colspan="4" style="text-align: center; color: #999;">暂无新补丁</td></tr>';
+                }
+                $('#patchList').html(html);
+            }
+            
+            // 检查安装顺序
+            function checkInstallOrder(targetVersion) {
+                if (!globalPatches || globalPatches.length === 0) {
+                    return true;
+                }
+                
+                // 按版本号排序（时间顺序）
+                var sortedPatches = globalPatches.slice().sort(function(a, b) {
+                    return a.version.localeCompare(b.version);
+                });
+                
+                // 找到目标版本的索引
+                var targetIndex = -1;
+                for (var i = 0; i < sortedPatches.length; i++) {
+                    if (sortedPatches[i].version === targetVersion) {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+                
+                if (targetIndex === -1) {
+                    return false; // 找不到目标版本
+                }
+                
+                // 检查之前的所有版本是否都已安装
+                for (var i = 0; i < targetIndex; i++) {
+                    if (sortedPatches[i].status !== 'installed') {
+                        return false; // 有更早的版本未安装
+                    }
+                }
+                
+                return true;
+            }
+            
+            // 安装补丁
+            $(document).on('click', '.install-btn', function(){
+                var btn = $(this);
+                var version = btn.data('version');
+                
+                // 检查安装顺序
+                if (!checkInstallOrder(version)) {
+                    layer.msg('请按时间顺序安装补丁，不能跳过更早的版本', {icon: 2});
+                    return;
+                }
+                
+                layer.confirm('确定要安装补丁 ' + version + ' 吗？<br><br>安装前会自动备份现有文件，但建议您先手动备份重要数据。', {
+                    icon: 3,
+                    title: '确认安装'
+                }, function(index){
+                    layer.close(index);
+                    
+                    btn.addClass('layui-btn-disabled').prop('disabled', true).html('<i class="layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop"></i> 安装中...');
+                    
+                    // 开始安装流程
+                    startInstallProcess(version, btn);
+                });
+            });
+            
+            // 开始安装流程
+            function startInstallProcess(version, btn) {
+                addLog('开始安装补丁 ' + version);
+                
+                // 首先获取文件列表
+                $.ajax({
+                    url: '?p=/Upgrade/getFileList',
+                    type: 'POST',
+                    data: {
+                        version: version,
+                        formcheck: '{$formcheck}'
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.code == 1 && response.data && response.data.length > 0) {
+                            addLog('获取到 ' + response.data.length + ' 个文件需要下载');
+                            // 显示下载进度
+                            showDownloadProgress();
+                            // 开始下载文件
+                            downloadFiles(version, response.data, btn);
+                        } else {
+                            addLog('获取文件列表失败: ' + (response.data || '未知错误'));
+                            layer.msg('获取文件列表失败', {icon: 2});
+                            resetInstallButton(btn);
+                        }
+                    },
+                    error: function() {
+                        addLog('网络错误，无法获取文件列表');
+                        layer.msg('网络错误，无法获取文件列表', {icon: 2});
+                        resetInstallButton(btn);
+                    }
+                });
+            }
+            
+            // 显示下载进度
+            function showDownloadProgress() {
+                $('#downloadProgress').show();
+                $('#progressFill').css('width', '0%');
+                $('#progressText').text('准备下载...');
+                $('#progressPercent').text('0%');
+                $('#fileList').empty();
+            }
+            
+            // 下载文件
+            function downloadFiles(version, files, btn) {
+                var totalFiles = files.length;
+                var completedFiles = 0;
+                var failedFiles = 0;
+                
+                // 初始化文件列表显示
+                var fileListHtml = '';
+                files.forEach(function(file, index) {
+                    fileListHtml += '<div class="file-item" id="file-' + index + '">' +
+                                   '<span>' + file + '</span>' +
+                                   '<span class="file-status waiting">等待中</span>' +
+                                   '</div>';
+                });
+                $('#fileList').html(fileListHtml);
+                
+                // 逐个下载文件
+                downloadNextFile(version, files, 0, totalFiles, completedFiles, failedFiles, btn);
+            }
+            
+            // 下载下一个文件
+            function downloadNextFile(version, files, currentIndex, totalFiles, completedFiles, failedFiles, btn) {
+                if (currentIndex >= totalFiles) {
+                    // 所有文件下载完成
+                    finishDownload(version, totalFiles, completedFiles, failedFiles, btn);
+                    return;
+                }
+                
+                var currentFile = files[currentIndex];
+                var fileItem = $('#file-' + currentIndex);
+                var statusSpan = fileItem.find('.file-status');
+                
+                // 更新状态为下载中
+                statusSpan.removeClass('waiting').addClass('downloading').text('下载中');
+                
+                // 更新进度文本
+                $('#progressText').text('正在下载: ' + currentFile);
+                
+                addLog('下载文件: ' + currentFile);
+                
+                $.ajax({
+                    url: '?p=/Upgrade/downloadFile',
+                    type: 'POST',
+                    data: {
+                        version: version,
+                        file: currentFile,
+                        formcheck: '{$formcheck}'
+                    },
+                    dataType: 'json',
+                    timeout: 60000, // 60秒超时
+                    success: function(response) {
+                        if (response.code == 1) {
+                            // 下载成功
+                            statusSpan.removeClass('downloading').addClass('completed').text('已完成');
+                            completedFiles++;
+                            addLog('文件下载成功: ' + currentFile);
+                        } else {
+                            // 下载失败
+                            statusSpan.removeClass('downloading').addClass('error').text('失败');
+                            failedFiles++;
+                            addLog('文件下载失败: ' + currentFile + ' - ' + (response.data || '未知错误'));
+                        }
+                        
+                        // 更新总进度
+                        var progress = Math.round(((completedFiles + failedFiles) / totalFiles) * 100);
+                        $('#progressFill').css('width', progress + '%');
+                        $('#progressPercent').text(progress + '%');
+                        
+                        // 下载下一个文件
+                        setTimeout(function() {
+                            downloadNextFile(version, files, currentIndex + 1, totalFiles, completedFiles, failedFiles, btn);
+                        }, 500); // 延迟500ms避免请求过快
+                    },
+                    error: function() {
+                        // 网络错误
+                        statusSpan.removeClass('downloading').addClass('error').text('网络错误');
+                        failedFiles++;
+                        addLog('网络错误，文件下载失败: ' + currentFile);
+                        
+                        // 更新总进度
+                        var progress = Math.round(((completedFiles + failedFiles) / totalFiles) * 100);
+                        $('#progressFill').css('width', progress + '%');
+                        $('#progressPercent').text(progress + '%');
+                        
+                        // 下载下一个文件
+                        setTimeout(function() {
+                            downloadNextFile(version, files, currentIndex + 1, totalFiles, completedFiles, failedFiles, btn);
+                        }, 500);
+                    }
+                });
+            }
+            
+            // 完成下载
+            function finishDownload(version, totalFiles, completedFiles, failedFiles, btn) {
+                if (failedFiles > 0) {
+                    addLog('下载完成，但有 ' + failedFiles + ' 个文件下载失败');
+                    layer.msg('部分文件下载失败，安装中止', {icon: 2});
+                    $('#downloadProgress').hide();
+                    resetInstallButton(btn);
+                    return;
+                }
+                
+                addLog('所有文件下载完成，开始应用更新');
+                $('#progressText').text('正在应用更新...');
+                
+                // 调用完成安装接口
+                $.ajax({
+                    url: '?p=/Upgrade/finishInstall',
+                    type: 'POST',
+                    data: {
+                        version: version,
+                        formcheck: '{$formcheck}'
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        $('#downloadProgress').hide();
+                        
+                        if (response.code == 1) {
+                            addLog('补丁安装成功: ' + version);
+                            layer.msg('补丁安装成功！', {icon: 1}, function(){
+                                checkUpdateFromServer();
+                            });
+                        } else {
+                            addLog('补丁安装失败: ' + (response.data || '未知错误'));
+                            layer.msg('补丁安装失败: ' + (response.data || '未知错误'), {icon: 2});
+                            resetInstallButton(btn);
+                        }
+                    },
+                    error: function() {
+                        $('#downloadProgress').hide();
+                        addLog('网络错误，补丁安装失败');
+                        layer.msg('网络错误，补丁安装失败', {icon: 2});
+                        resetInstallButton(btn);
+                    }
+                });
+            }
+            
+            // 重置安装按钮
+            function resetInstallButton(btn) {
+                btn.removeClass('layui-btn-disabled').prop('disabled', false).html('<i class="layui-icon layui-icon-download-circle"></i> 安装');
+            }
+            
+            // 添加日志功能
+            function addLog(message) {
+                var now = new Date();
+                var timeStr = now.getFullYear() + '-' + 
+                             String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                             String(now.getDate()).padStart(2, '0') + ' ' + 
+                             String(now.getHours()).padStart(2, '0') + ':' + 
+                             String(now.getMinutes()).padStart(2, '0') + ':' + 
+                             String(now.getSeconds()).padStart(2, '0');
+                
+                var logHtml = '[' + timeStr + '] ' + message + '<br>\n';
+                $('#logContent').append(logHtml);
+                $('#updateLog').show();
+                
+                // 滚动到底部
+                var logContent = document.getElementById('logContent');
+                logContent.scrollTop = logContent.scrollHeight;
+            }
+        });
+</script>
