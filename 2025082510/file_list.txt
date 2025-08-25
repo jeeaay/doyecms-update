@@ -2,4 +2,3 @@ script/UPDATE_CREATOR_README.md
 script/create_update.py
 script/pyproject.toml
 script/uv.lock
-update_apply.txt
