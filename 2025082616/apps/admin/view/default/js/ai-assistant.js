@@ -1501,18 +1501,33 @@ var AiAssistant = {
     // ==================== 队列管理相关方法 ====================
 
     /**
+     * 获取当前页面的p参数
+     * @returns {string} 当前页面的p参数值
+     */
+    getCurrentPageParam: function() {
+        var urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('p') || '';
+    },
+    
+    /**
      * 检查页面加载时是否有未完成的任务
      */
     checkExistingTask: function() {
         var taskId = localStorage.getItem('ai_task_id');
         var taskType = localStorage.getItem('ai_task_type');
+        var storedPageParam = localStorage.getItem('ai_task_page_param');
+        var currentPageParam = this.getCurrentPageParam();
         
-        if (taskId && taskType) {
+        // 只有在相同页面（p参数相同）才恢复任务
+        if (taskId && taskType && storedPageParam === currentPageParam) {
             this.currentTaskId = taskId;
             
             // 根据任务类型重新创建成功回调函数
             var successCallback = this.createCallbackByType(taskType);
             this.checkTaskStatus(taskId, true, successCallback);
+        } else if (taskId && storedPageParam !== currentPageParam) {
+            // 如果页面不同，清除旧任务
+            this.clearTaskStorage();
         }
     },
 
@@ -1620,8 +1635,7 @@ var AiAssistant = {
                     self.currentTaskId = taskId;
                     localStorage.setItem('ai_task_id', taskId);
                     localStorage.setItem('ai_task_type', taskType);
-                    
-
+                    localStorage.setItem('ai_task_page_param', self.getCurrentPageParam());
                     
                     // 开始轮询
                     self.startPolling(taskId, successCallback, errorCallback);
@@ -1805,8 +1819,16 @@ var AiAssistant = {
         this.currentTaskId = null;
         localStorage.removeItem('ai_task_id');
         localStorage.removeItem('ai_task_type');
+        localStorage.removeItem('ai_task_page_param');
         
         this.stopPolling();
+    },
+    
+    /**
+     * 清除任务存储（别名函数，保持兼容性）
+     */
+    clearTaskStorage: function() {
+        this.clearTask();
     },
 
     /**
