@@ -1,0 +1,8 @@
+apps/admin/controller/IndexController.php
+apps/admin/view/default/js/ai-assistant.js
+script/create_update.py
+script/queue/.env.sample
+script/queue/README.md
+script/queue/queue.bat
+script/queue/queue.sh
+script/queue/queue_processor.php
