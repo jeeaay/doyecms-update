@@ -1,6 +1,7 @@
 apps/admin/controller/IndexController.php
 apps/admin/controller/content/AiController.php
 apps/admin/view/default/js/ai-assistant.js
+apps/admin/view/default/js/cropper-integration.js
 config/config.php
 core/basic/RedisQueue.php
 script/create_update.py

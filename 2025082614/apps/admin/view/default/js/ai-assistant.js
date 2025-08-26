@@ -213,7 +213,7 @@ var AiAssistant = {
             });
 
             $.ajax({
-                url: '/admin.php?p=/Ai/optimizeTitle',
+                url: location.pathname + '?p=/Ai/optimizeTitle',
                 type: 'POST',
                 timeout: 60000000,
                 dataType: 'json',
@@ -264,7 +264,7 @@ var AiAssistant = {
         });
 
         $.ajax({
-            url: '/admin.php?p=/Ai/polish',
+            url: location.pathname + '?p=/Ai/polish',
             type: 'POST',
             timeout: 60000000,
             dataType: 'json',
@@ -318,7 +318,7 @@ var AiAssistant = {
         });
 
         $.ajax({
-            url: '/admin.php?p=/Ai/translate',
+            url: location.pathname + '?p=/Ai/translate',
             type: 'POST',
             timeout: 60000000,
             dataType: 'json',
@@ -421,7 +421,7 @@ var AiAssistant = {
                 });
 
                 $.ajax({
-                    url: '/admin.php?p=/Ai/generate',
+                    url: location.pathname + '?p=/Ai/generate',
                     type: 'POST',
                     timeout: 60000000,
                     dataType: 'json',
@@ -905,7 +905,7 @@ var AiAssistant = {
         var sourceContent = (titleContent || '') + '\n\n' + (content || '');
         
         $.ajax({
-            url: '/admin.php?p=/Ai/optimize',
+            url: location.pathname + '?p=/Ai/optimize',
             type: 'POST',
             timeout: 6000000,
             dataType: 'json',
@@ -971,7 +971,7 @@ var AiAssistant = {
         var sourceContent = currentTitle + '\n\n' + seoDescription;
         
         $.ajax({
-            url: '/admin.php?p=/Ai/optimize',
+            url: location.pathname + '?p=/Ai/optimize',
             type: 'POST',
             timeout: 6000000,
             dataType: 'json',
@@ -1050,7 +1050,7 @@ var AiAssistant = {
         var sourceContent = (optimizedTitle || '') + '\n\n' + (seoDescription || '');
         
         $.ajax({
-            url: '/admin.php?p=/Ai/optimize',
+            url: location.pathname + '?p=/Ai/optimize',
             type: 'POST',
             timeout: 6000000,
             dataType: 'json',
@@ -1176,7 +1176,7 @@ var AiAssistant = {
         }
         
         $.ajax({
-            url: '/admin.php?p=/Ai/optimizeTitle',
+            url: location.pathname + '?p=/Ai/optimizeTitle',
             type: 'POST',
             timeout: 6000000,
             dataType: 'json',
@@ -1214,7 +1214,7 @@ var AiAssistant = {
         var sourceContent = titleContent || content;
         
         $.ajax({
-            url: '/admin.php?p=/Ai/optimize',
+            url: location.pathname + '?p=/Ai/optimize',
             type: 'POST',
             timeout: 6000000,
             dataType: 'json',
@@ -1468,7 +1468,7 @@ var AiAssistant = {
         }
 
         $.ajax({
-            url: '/admin.php?p=/Index/aiQueueSubmit',
+            url: location.pathname + '?p=/Index/aiQueueSubmit',
             type: 'POST',
             dataType: 'json',
             data: {
@@ -1553,7 +1553,7 @@ var AiAssistant = {
         var self = this;
         
         $.ajax({
-            url: '/admin.php?p=/Index/aiQueueStatus',
+            url: location.pathname + '?p=/Index/aiQueueStatus',
             type: 'GET',
             dataType: 'json',
             data: {
@@ -1656,7 +1656,7 @@ var AiAssistant = {
             title: '确认取消'
         }, function(index) {
             $.ajax({
-                url: '/admin.php?p=/Index/aiQueueCancel',
+                url: location.pathname + '?p=/Index/aiQueueCancel',
                 type: 'POST',
                 dataType: 'json',
                 data: {
