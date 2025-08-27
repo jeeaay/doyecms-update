@@ -612,7 +612,7 @@ var AiAssistant = {
         }
 
         $.ajax({
-            url: location.pathname + '?p=/Index/aiQueueSubmit',
+            url: location.pathname + '?p=/Ai/aiQueueSubmit',
             type: 'POST',
             dataType: 'json',
             data: {
@@ -699,7 +699,7 @@ var AiAssistant = {
         var self = this;
         
         $.ajax({
-            url: location.pathname + '?p=/Index/aiQueueStatus',
+            url: location.pathname + '?p=/Ai/aiQueueStatus',
             type: 'GET',
             dataType: 'json',
             data: {
@@ -851,7 +851,7 @@ var AiAssistant = {
             title: '确认取消'
         }, function(index) {
             $.ajax({
-                url: location.pathname + '?p=/Index/aiQueueCancel',
+                url: location.pathname + '?p=/Ai/aiQueueCancel',
                 type: 'POST',
                 dataType: 'json',
                 data: {

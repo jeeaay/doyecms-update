@@ -551,7 +551,7 @@ class AiQueueProcessor
         }
         
         // 记录AI接口原始返回内容，用于调试
-        $this->log("AI接口原始返回: " . $response, 'DEBUG');
+        // $this->log("AI接口原始返回: " . $response, 'DEBUG');
         
         $result = json_decode($response, true);
         if (!$result || !isset($result['choices'][0]['message']['content'])) {
@@ -560,7 +560,7 @@ class AiQueueProcessor
         
         // 记录AI返回的内容
         $aiContent = $result['choices'][0]['message']['content'];
-        $this->log("AI返回内容: " . $aiContent, 'DEBUG');
+        // $this->log("AI返回内容: " . $aiContent, 'DEBUG');
         
         return $aiContent;
     }
@@ -606,11 +606,11 @@ class AiQueueProcessor
             if ($openBraces > $closeBraces) {
                 $missingBraces = $openBraces - $closeBraces;
                 $cleanResponse .= str_repeat('}', $missingBraces);
-                $this->log("检测到JSON缺少{$missingBraces}个结尾大括号，已自动补充", 'DEBUG');
+                // $this->log("检测到JSON缺少{$missingBraces}个结尾大括号，已自动补充", 'DEBUG');
             }
             
             // 记录清理后的内容用于调试
-            $this->log("清理后的AI返回内容: " . $cleanResponse, 'DEBUG');
+            // $this->log("清理后的AI返回内容: " . $cleanResponse, 'DEBUG');
             
             // 解析AI返回的JSON结果
             $seoData = json_decode($cleanResponse, true);
