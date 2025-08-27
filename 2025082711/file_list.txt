@@ -1,0 +1,3 @@
+apps/admin/controller/IndexController.php
+apps/admin/view/default/js/ai-assistant.js
+script/queue/queue_processor.php
