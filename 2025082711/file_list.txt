@@ -1,4 +1,5 @@
 apps/admin/controller/IndexController.php
 apps/admin/controller/content/AiController.php
 apps/admin/view/default/js/ai-assistant.js
+script/queue/README.md
 script/queue/queue_processor.php
