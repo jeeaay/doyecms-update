@@ -4,9 +4,15 @@
 
 ## quick start
 
-1. 确定已安装Redis和php-redis扩展,确定./queue.sh已有执行权限（chmod +x queue.sh）
-2. 复制.env.sample文件为.env
-3. 尤其需要注意.env中PHP_PATH路径（宝塔面板的路径为/www/server/php/[84]/bin/php,[84]是版本号 需要替换为已安装php-redis扩展的php版本）
+1. 确定已安装
+  - Redis
+  - php-redis扩展
+2. 确定./queue.sh已有执行权限（chmod +x queue.sh）
+3. 复制.env.sample文件为.env
+4. 尤其需要注意.env中PHP_PATH路径
+  - 默认使用系统环境的/usr/bin/php
+  - 宝塔面板的路径为/www/server/php/[84]/bin/php,[84]是版本号 需要替换为已安装php-redis扩展的php版本
+
 ```bash
 # 安装:  
 ./queue.sh install
