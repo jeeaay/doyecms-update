@@ -1,0 +1,10 @@
+apps/admin/controller/IndexController.php
+apps/admin/view/default/common/foot.html
+apps/admin/view/default/index.html
+apps/admin/view/default/system/home.html
+apps/common/AdminController.php
+apps/common/ApiController.php
+apps/common/route.php
+apps/home/controller/SpecController.php
+config/database.php
+core/function/file.php
