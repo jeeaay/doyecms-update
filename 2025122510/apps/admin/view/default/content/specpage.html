@@ -1,0 +1,475 @@
+{include file='common/head.html'}
+
+<div class="layui-body">
+    {if([$list])}
+    <div class="layui-tab layui-tab-brief" lay-filter="tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="t1">专题单页列表</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <form action="{url./admin/SpecPage/index}" method="get" class="layui-form">
+                    <div class="layui-form-item nospace">
+                        <div class="layui-input-inline">
+                            <input type="text" name="keyword" value="{$get.keyword}" placeholder="请输入专题名称关键字"
+                                   class="layui-input">
+                        </div>
+                        <div class="layui-input-inline">
+                            <button class="layui-btn" lay-submit>搜索</button>
+                            <a class="layui-btn layui-btn-primary" href="{url./admin/SpecPage/index}">清除搜索</a>
+                            {if(check_level('add'))}
+                            <a class="layui-btn layui-btn-normal" href="{url./admin/SpecPage/add}">新增专题</a>
+                            {/if}
+                        </div>
+                    </div>
+                </form>
+
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>专题名称</th>
+                        <th>模板路径</th>
+                        <th>输出目录</th>
+                        <th>模板语种</th>
+                        <th>翻译进度</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach $spec_pages(key,value)}
+                    <tr>
+                        <td>[value->id]</td>
+                        <td>[value->name]</td>
+                        <td>[value->template_path]</td>
+                        <td>[value->output_dir]</td>
+                        <td>[value->base_language]</td>
+                        <td>
+                            {if($value->stats_total > 0)}
+                            <span class="layui-badge layui-bg-blue" title="总计">[value->stats_total]</span>
+                            <span class="layui-badge layui-bg-green" title="成功">[value->stats_success]</span>
+                            <span class="layui-badge layui-bg-red" title="失败">[value->stats_fail]</span>
+                            {else}
+                            <span class="layui-badge layui-bg-gray">无</span>
+                            {/if}
+                        </td>
+                        <td>
+                            {if($value->status)}
+                            <span class="layui-badge layui-bg-green">启用</span>
+                            {else}
+                            <span class="layui-badge">禁用</span>
+                            {/if}
+                        </td>
+                        <td>
+                            {if(check_level('mod'))}
+                            <a href="{url./admin/SpecPage/mod/id/'.$value->id.'}" class="layui-btn layui-btn-xs">修改</a>
+                            {/if}
+                            {if(check_level('generate'))}
+                            <a href="{url./admin/SpecPage/generate/id/'.$value->id.'}" class="layui-btn layui-btn-xs layui-btn-warm">生成静态页</a>
+                            {/if}
+                            {if(check_level('translate'))}
+                            <a href="{url./admin/SpecPage/translate/id/'.$value->id.'}" class="layui-btn layui-btn-xs layui-btn-normal">提交翻译</a>
+                            {/if}
+                            {if(check_level('del'))}
+                            <a href="{url./admin/SpecPage/del/id/'.$value->id.'}" class="layui-btn layui-btn-xs layui-btn-danger"
+                               onclick="return confirm('确定要删除该专题吗？');">删除</a>
+                            {/if}
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {/if}
+
+    {if([$add])}
+    <div class="layui-tab layui-tab-brief" lay-filter="tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this">新增专题单页</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <form action="{url./admin/SpecPage/add}" method="post" class="layui-form" id="add">
+                    <input type="hidden" name="formcheck" value="{$formcheck}">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">专题名称<span class="layui-text-red">*</span></label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" required lay-verify="required" placeholder="请输入专题名称"
+                                   class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">模板路径<span class="layui-text-red">*</span></label>
+                        <div class="layui-input-block">
+                            <select name="template_path" required lay-verify="required" lay-search lay-filter="template_path" id="template_path_select">
+                                <option value="">直接输入或选择模板路径</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">输出目录<span class="layui-text-red">*</span></label>
+                        <div class="layui-input-block">
+                            <input type="text" name="output_dir" required lay-verify="required"
+                                   placeholder="例如：spec/crush" class="layui-input" id="output_dir_input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">模板语种<span class="layui-text-red">*</span></label>
+                        <div class="layui-input-block">
+                            <input type="text" name="base_language" required lay-verify="required"
+                                   placeholder="例如：en、zh-CN" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="1" title="启用" checked>
+                            <input type="radio" name="status" value="0" title="禁用">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit>保存</button>
+                            <a class="layui-btn layui-btn-primary" href="{url./admin/SpecPage/index}">返回列表</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {/if}
+
+    {if([$mod])}
+    <div class="layui-tab layui-tab-brief" lay-filter="tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this">修改专题单页</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <form action="{url./admin/SpecPage/mod/id/'.[$get.id].'}" method="post" class="layui-form" id="mod">
+                    <input type="hidden" name="formcheck" value="{$formcheck}">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">专题名称<span class="layui-text-red">*</span></label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" required lay-verify="required" value="{$spec->name}"
+                                   placeholder="请输入专题名称" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">模板路径<span class="layui-text-red">*</span></label>
+                        <div class="layui-input-block">
+                            <input type="text" name="template_path" required lay-verify="required"
+                                   value="{$spec->template_path}"
+                                   placeholder="例如：spec/crush/template/index.html" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">输出目录<span class="layui-text-red">*</span></label>
+                        <div class="layui-input-block">
+                            <input type="text" name="output_dir" required lay-verify="required"
+                                   value="{$spec->output_dir}"
+                                   placeholder="例如：spec/crush" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">模板语种<span class="layui-text-red">*</span></label>
+                        <div class="layui-input-block">
+                            <input type="text" name="base_language" required lay-verify="required"
+                                   value="{$spec->base_language}"
+                                   placeholder="例如：en、zh-CN" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="1" title="启用" {if($spec->status)}checked{/if}>
+                            <input type="radio" name="status" value="0" title="禁用" {if(!$spec->status)}checked{/if}>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit>保存</button>
+                            <a class="layui-btn layui-btn-primary" href="{url./admin/SpecPage/index}">返回列表</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {/if}
+    {if([$translate])}
+    <div class="layui-tab layui-tab-brief" lay-filter="tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this">提交翻译任务</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <form action="{url./admin/SpecPage/translate/id/'.[$get.id].'}" method="post" class="layui-form" id="translate">
+                    <input type="hidden" name="formcheck" value="{$formcheck}">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">专题名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" value="{$spec->name}" readonly class="layui-input layui-disabled">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">目标语言<span class="layui-text-red">*</span></label>
+                        <div class="layui-input-block">
+                            <div id="spec_target_language_box">
+                                {foreach $languages(key,value)}
+                                <input type="checkbox" name="target_languages[]" value="[key]" title="[value] ([key])">
+                                {/foreach}
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <button type="button" class="layui-btn layui-btn-xs layui-btn-primary" id="spec_language_toggle_btn">管理语言</button>
+                            </div>
+                            <div id="spec_language_manage_panel" style="display:none; margin-top: 10px;">
+                                <div class="layui-form-item" style="margin-bottom: 10px;">
+                                    <div class="layui-inline">
+                                        <input type="text" id="spec_language_name" placeholder="语言，例如：俄语" class="layui-input">
+                                    </div>
+                                    <div class="layui-inline">
+                                        <input type="text" id="spec_language_code" placeholder="代码，例如：ru" class="layui-input">
+                                    </div>
+                                    <div class="layui-inline">
+                                        <button type="button" class="layui-btn layui-btn-sm" id="spec_language_add_btn">新增</button>
+                                    </div>
+                                </div>
+                                <table class="layui-table" style="margin: 0;">
+                                    <thead>
+                                    <tr>
+                                        <th style="width: 80px;">ID</th>
+                                        <th>语言</th>
+                                        <th style="width: 120px;">代码</th>
+                                        <th style="width: 120px;">操作</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="spec_language_table_body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit>提交翻译任务</button>
+                            <a class="layui-btn layui-btn-primary" href="{url./admin/SpecPage/index}">返回列表</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {/if}
+</div>
+
+{include file='common/foot.html'}
+
+<script>
+layui.use(['form', 'jquery', 'layer'], function(){
+    var form = layui.form;
+    var $ = layui.jquery;
+    var layer = layui.layer;
+
+    // 获取模板列表
+    if ($('#template_path_select').length > 0) {
+        $.ajax({
+            url: "{url./admin/SpecPage/getTemplateList}",
+            type: 'get',
+            dataType: 'json',
+            success: function(res) {
+                if (res.code == 1) {
+                    var options = '<option value="">直接输入或选择模板路径</option>';
+                    $.each(res.data, function(index, item) {
+                        options += '<option value="' + item + '">' + item + '</option>';
+                    });
+                    $('#template_path_select').html(options);
+                    form.render('select');
+                }
+            }
+        });
+    }
+
+    // 监听模板路径选择
+    form.on('select(template_path)', function(data){
+        var path = data.value; // spec/crush/template/index.html
+        if (path) {
+            // 自动填写输出目录：取模板路径的上上级目录
+            // 例如 spec/crush/template/index.html -> spec/crush
+            var parts = path.split('/');
+            if (parts.length >= 3 && parts[parts.length - 2] === 'template') {
+                var outputDir = parts.slice(0, parts.length - 2).join('/');
+                $('#output_dir_input').val(outputDir);
+            }
+        }
+    });
+
+    function escapeHtml(text) {
+        return String(text || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function getFormcheckValue() {
+        var formcheckInput = $('input[name="formcheck"]').first();
+        return formcheckInput.length ? formcheckInput.val() : '';
+    }
+
+    function getSelectedLanguageCodes() {
+        var selectedCodes = [];
+        $('#spec_target_language_box input[type="checkbox"][name="target_languages[]"]:checked').each(function () {
+            selectedCodes.push($(this).val());
+        });
+        return selectedCodes;
+    }
+
+    function renderLanguageCheckboxes(languageList) {
+        var selectedCodes = getSelectedLanguageCodes();
+        var html = '';
+
+        if (languageList && languageList.length) {
+            $.each(languageList, function (index, item) {
+                var code = item.code || '';
+                var name = item.name || '';
+                var checked = selectedCodes.indexOf(code) >= 0 ? ' checked' : '';
+                html += '<input type="checkbox" name="target_languages[]" value="' + escapeHtml(code) + '" title="' + escapeHtml(name) + ' (' + escapeHtml(code) + ')"' + checked + '>';
+            });
+        } else {
+            html = '<span class="layui-badge layui-bg-gray">暂无语言</span>';
+        }
+
+        $('#spec_target_language_box').html(html);
+        form.render('checkbox');
+    }
+
+    function renderLanguageTable(languageList) {
+        var html = '';
+        if (languageList && languageList.length) {
+            $.each(languageList, function (index, item) {
+                html += '<tr>'
+                    + '<td>' + escapeHtml(item.id) + '</td>'
+                    + '<td>' + escapeHtml(item.name) + '</td>'
+                    + '<td>' + escapeHtml(item.code) + '</td>'
+                    + '<td><button type="button" class="layui-btn layui-btn-xs layui-btn-danger spec-language-del-btn" data-id="' + escapeHtml(item.id) + '">删除</button></td>'
+                    + '</tr>';
+            });
+        } else {
+            html = '<tr><td colspan="4" style="text-align:center;color:#999;">暂无数据</td></tr>';
+        }
+        $('#spec_language_table_body').html(html);
+    }
+
+    function refreshLanguageList() {
+        $.ajax({
+            url: "{url./admin/SpecPage/getLanguageList}",
+            type: 'get',
+            dataType: 'json',
+            success: function (res) {
+                if (res.code == 1) {
+                    renderLanguageCheckboxes(res.data || []);
+                    renderLanguageTable(res.data || []);
+                } else {
+                    layer.msg(res.data || '获取语言列表失败');
+                }
+            },
+            error: function () {
+                layer.msg('获取语言列表失败');
+            }
+        });
+    }
+
+    if ($('#spec_language_manage_panel').length > 0) {
+        refreshLanguageList();
+
+        $('#spec_language_toggle_btn').on('click', function () {
+            var isVisible = $('#spec_language_manage_panel').is(':visible');
+            $('#spec_language_manage_panel').toggle(!isVisible);
+        });
+
+        $('#spec_language_add_btn').on('click', function () {
+            var name = $.trim($('#spec_language_name').val());
+            var code = $.trim($('#spec_language_code').val());
+
+            if (!name) {
+                layer.msg('请输入语言');
+                return;
+            }
+            if (!code) {
+                layer.msg('请输入代码');
+                return;
+            }
+
+            $.ajax({
+                url: "{url./admin/SpecPage/addLanguage}",
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    formcheck: getFormcheckValue(),
+                    name: name,
+                    code: code
+                },
+                success: function (res) {
+                    if (res.code == 1) {
+                        $('#spec_language_name').val('');
+                        $('#spec_language_code').val('');
+                        refreshLanguageList();
+                        layer.msg('新增成功');
+                    } else {
+                        layer.msg(res.data || '新增失败');
+                    }
+                },
+                error: function () {
+                    layer.msg('新增失败');
+                }
+            });
+        });
+
+        $(document).on('click', '.spec-language-del-btn', function () {
+            var id = $(this).data('id');
+            layer.confirm('确定删除该语言吗？', function (index) {
+                $.ajax({
+                    url: "{url./admin/SpecPage/delLanguage}",
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        formcheck: getFormcheckValue(),
+                        id: id
+                    },
+                    success: function (res) {
+                        if (res.code == 1) {
+                            refreshLanguageList();
+                            layer.msg('删除成功');
+                        } else {
+                            layer.msg(res.data || '删除失败');
+                        }
+                    },
+                    error: function () {
+                        layer.msg('删除失败');
+                    }
+                });
+                layer.close(index);
+            });
+        });
+    }
+});
+</script>
