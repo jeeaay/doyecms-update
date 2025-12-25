@@ -1,0 +1,9 @@
+apps/admin/controller/content/SpecPageController.php
+apps/admin/controller/system/UpgradeController.php
+apps/admin/model/content/SpecPageModel.php
+apps/admin/model/content/SpecPageStaticService.php
+apps/admin/view/default/content/specpage.html
+apps/common/route.php
+data/migrate_spec_page.sql
+script/create_update.py
+script/queue/queue_processor.php
