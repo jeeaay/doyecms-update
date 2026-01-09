@@ -1,0 +1,11 @@
+apps/admin/controller/system/ConfigController.php
+apps/admin/controller/system/StaticController.php
+apps/admin/model/system/StaticService.php
+apps/admin/view/default/common/head.html
+apps/admin/view/default/system/config.html
+apps/admin/view/default/system/static.html
+apps/common/route.php
+apps/home/model/ParserModel.php
+core/basic/Kernel.php
+core/view/Parser.php
+core/view/View.php
