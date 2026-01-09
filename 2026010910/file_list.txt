@@ -1,0 +1,5 @@
+apps/admin/controller/content/SpecPageController.php
+apps/admin/controller/system/ConfigController.php
+apps/admin/view/default/content/specpage.html
+apps/admin/view/default/system/config.html
+apps/common/TranslateClient.php
