@@ -1,3 +1,0 @@
-apps/admin/controller/system/UpgradeController.php
-apps/admin/view/default/system/upgrade.html
-data/migrate_ay_model.sql

@@ -6,5 +6,4 @@ apps/common/AdminController.php
 apps/common/ApiController.php
 apps/common/route.php
 apps/home/controller/SpecController.php
-config/database.php
 core/function/file.php
