@@ -8,3 +8,4 @@ apps/common/route.php
 apps/home/controller/SpecController.php
 config/database.php
 core/function/file.php
+data/migrate_ay_model.sql
