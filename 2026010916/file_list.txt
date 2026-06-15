@@ -9,3 +9,4 @@ apps/home/model/ParserModel.php
 core/basic/Kernel.php
 core/view/Parser.php
 core/view/View.php
+data/migrate_ay_model.sql
