@@ -1,3 +1,4 @@
+data/migrate_ay_model.sql
 apps/admin/controller/IndexController.php
 apps/admin/view/default/common/foot.html
 apps/admin/view/default/index.html
@@ -8,4 +9,3 @@ apps/common/route.php
 apps/home/controller/SpecController.php
 config/database.php
 core/function/file.php
-data/migrate_ay_model.sql
