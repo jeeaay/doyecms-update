@@ -1,0 +1,2 @@
+core/extend/ueditor/php/Uploader.class.php
+rewrite/nginx.txt
