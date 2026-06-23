@@ -199,7 +199,7 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
 
         // 替换 {CORE_DIR}/code.php
         if (strpos($content, '{CORE_DIR}/code.php') !== false) {
-            $content = str_replace('{CORE_DIR}/code.php', '/Code', $content);
+            $content = str_replace('{CORE_DIR}/code.php', '{url./admin/system.Code}', $content);
             $hasChange = true;
         }
 
