@@ -1,0 +1,5 @@
+script/migrate_www.php
+script/migrate_www/www/index.php
+script/migrate_www/www/admin.php
+script/migrate_www/www/api.php
+script/migrate_www/core/init.php
