@@ -26,5 +26,31 @@ define('SITE_INDEX_DIR', '');
 define('STATIC_DIR', '/www/static');
 define('WWW_MIGRATED', true);
 
+// 验证码处理
+if (isset($_GET['code'])) {
+    // 检查 Referer
+    $referer = $_SERVER['HTTP_REFERER'] ?? '';
+    $host = $_SERVER['HTTP_HOST'] ?? '';
+    if (empty($referer) || (strpos($referer, '://' . $host) !== 4 && strpos($referer, '://' . $host) !== 5)) {
+        die('非法调用验证码！');
+    }
+
+    // 启动会话
+    if (!isset($_SESSION)) {
+        session_start();
+    }
+
+    // 生成验证码
+    require ROOT_PATH . '/core/extend/code/Code.php';
+    $code = new \core\extend\code\Code();
+    $code->height = 45;
+    $code->width = 120;
+    $code->fontsize = 18;
+    $code->charset = 'abcdefghkmnprtuvwxy23456789ABCDEFGHKMNPRTUVWXY';
+    $code->doimg();
+    session('checkcode', $code->getCode());
+    exit;
+}
+
 // 引用内核启动文件
 require ROOT_PATH . '/core/start.php';

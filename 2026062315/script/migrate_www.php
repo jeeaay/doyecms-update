@@ -195,6 +195,12 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
             $hasChange = true;
         }
 
+        // 替换 {CORE_DIR}/code.php
+        if (strpos($content, '{CORE_DIR}/code.php') !== false) {
+            $content = str_replace('{CORE_DIR}/code.php', '?code', $content);
+            $hasChange = true;
+        }
+
         if ($hasChange) {
             if (file_put_contents($file, $content) !== false) {
                 $replaced++;
