@@ -7,8 +7,9 @@
  *   2. 移动 static/ 到 www/static/
  *   3. 移动后台静态资源到 www/static/admin/
  *   4. 移动 ueditor 到 www/static/admin/ueditor/
- *   5. 替换模板中的 {APP_THEME_DIR} 和 {CORE_DIR}/extend/ueditor
- *   6. 删除旧入口文件
+ *   5. 替换模板中的 {APP_THEME_DIR}、{CORE_DIR}/extend/ueditor、{CORE_DIR}/code.php
+ *   6. 添加验证码路由和免登录配置
+ *   7. 删除旧入口文件
  *
  * 使用方法：
  *   php script/migrate_www.php
@@ -36,7 +37,7 @@ echo "=== DoyeCMS 入口迁移脚本 ===\n\n";
 // ============================================================
 // 步骤 0: 检查迁移状态
 // ============================================================
-echo "[0/8] 检查迁移状态...\n";
+echo "[0/9] 检查迁移状态...\n";
 if (file_exists(WWW_PATH . '/index.php')) {
     echo "  -> www/index.php 已存在，已迁移，退出\n";
     exit(0);
@@ -45,13 +46,14 @@ if (file_exists(WWW_PATH . '/index.php')) {
 // ============================================================
 // 步骤 1: 从附属目录复制文件
 // ============================================================
-echo "[1/8] 从附属目录复制文件...\n";
+echo "[1/9] 从附属目录复制文件...\n";
 
 $copyMap = array(
     SCRIPT_DIR . '/www/index.php' => WWW_PATH . '/index.php',
     SCRIPT_DIR . '/www/admin.php' => WWW_PATH . '/admin.php',
     SCRIPT_DIR . '/www/api.php'   => WWW_PATH . '/api.php',
     SCRIPT_DIR . '/core/init.php' => ROOT_PATH . '/core/init.php',
+    SCRIPT_DIR . '/CodeController.php' => ROOT_PATH . '/apps/admin/controller/system/CodeController.php',
 );
 
 foreach ($copyMap as $src => $dst) {
@@ -75,7 +77,7 @@ foreach ($copyMap as $src => $dst) {
 // ============================================================
 // 步骤 2: 移动 static/ -> www/static/
 // ============================================================
-echo "[2/8] 移动 static/ -> www/static/...\n";
+echo "[2/9] 移动 static/ -> www/static/...\n";
 
 if (!is_dir(STATIC_SRC)) {
     echo "  -> static/ 不存在，跳过\n";
@@ -115,7 +117,7 @@ if (!is_dir(STATIC_SRC)) {
 // ============================================================
 // 步骤 3: 移动后台静态资源
 // ============================================================
-echo "[3/8] 移动后台静态资源...\n";
+echo "[3/9] 移动后台静态资源...\n";
 
 $adminStaticDirs = array('css', 'js', 'layui', 'font-awesome', 'images');
 
@@ -147,7 +149,7 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
 // ============================================================
 // 步骤 4: 移动 ueditor -> www/static/admin/ueditor/
 // ============================================================
-echo "[4/8] 移动 ueditor...\n";
+echo "[4/9] 移动 ueditor...\n";
 
 if (!is_dir(UEDITOR_SRC)) {
     echo "  -> core/extend/ueditor 不存在，跳过\n";
@@ -165,9 +167,9 @@ if (!is_dir(UEDITOR_SRC)) {
 }
 
 // ============================================================
-// 步骤 5: 替换模板中的 {APP_THEME_DIR} 和 {CORE_DIR}/extend/ueditor
+// 步骤 5: 替换模板变量
 // ============================================================
-echo "[5/8] 替换模板变量...\n";
+echo "[5/9] 替换模板变量...\n";
 
 if (!is_dir(ADMIN_VIEW_SRC)) {
     echo "  -> apps/admin/view/default 不存在，跳过\n";
@@ -197,7 +199,7 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
 
         // 替换 {CORE_DIR}/code.php
         if (strpos($content, '{CORE_DIR}/code.php') !== false) {
-            $content = str_replace('{CORE_DIR}/code.php', '?code', $content);
+            $content = str_replace('{CORE_DIR}/code.php', '/Code', $content);
             $hasChange = true;
         }
 
@@ -213,9 +215,60 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
 }
 
 // ============================================================
-// 步骤 6: 删除旧入口文件
+// 步骤 6: 添加验证码路由和免登录配置
 // ============================================================
-echo "[6/8] 删除旧入口文件...\n";
+echo "[6/9] 添加验证码路由和免登录配置...\n";
+
+// 修改 AdminController.php，添加免登录路径
+$adminControllerFile = ROOT_PATH . '/apps/common/AdminController.php';
+if (file_exists($adminControllerFile)) {
+    $content = file_get_contents($adminControllerFile);
+    if ($content !== false) {
+        // 检查是否已添加
+        if (strpos($content, "'/admin/Code/index'") === false) {
+            $content = str_replace(
+                "'/admin/Index/login' // 执行登录",
+                "'/admin/Index/login', // 执行登录\n            '/admin/Code/index'   // 验证码",
+                $content
+            );
+            if (file_put_contents($adminControllerFile, $content) !== false) {
+                echo "  -> 已修改 AdminController.php 添加免登录路径\n";
+            } else {
+                echo "  [WARN] 修改 AdminController.php 失败\n";
+            }
+        } else {
+            echo "  -> AdminController.php 已包含验证码路径，跳过\n";
+        }
+    }
+}
+
+// 修改 route.php，添加验证码路由
+$routeFile = ROOT_PATH . '/apps/common/route.php';
+if (file_exists($routeFile)) {
+    $content = file_get_contents($routeFile);
+    if ($content !== false) {
+        // 检查是否已添加
+        if (strpos($content, "'admin/Code'") === false) {
+            $content = str_replace(
+                "'admin/Static' => 'admin/system.Static',",
+                "'admin/Static' => 'admin/system.Static',\n        'admin/Code' => 'admin/system.Code',",
+                $content
+            );
+            if (file_put_contents($routeFile, $content) !== false) {
+                echo "  -> 已修改 route.php 添加验证码路由\n";
+            } else {
+                echo "  [WARN] 修改 route.php 失败\n";
+            }
+        } else {
+            echo "  -> route.php 已包含验证码路由，跳过\n";
+        }
+    }
+}
+
+// ============================================================
+// 步骤 7: 删除旧入口文件
+// ============================================================
+echo "[7/9] 删除旧入口文件...\n";
 
 $oldEntryFiles = array(
     ROOT_PATH . '/index.php',
@@ -236,9 +289,9 @@ foreach ($oldEntryFiles as $file) {
 }
 
 // ============================================================
-// 步骤 7: 删除旧 static/ 目录（如仍存在）
+// 步骤 8: 删除旧 static/ 目录（如仍存在）
 // ============================================================
-echo "[7/8] 检查旧 static/ 目录...\n";
+echo "[8/9] 检查旧 static/ 目录...\n";
 
 if (is_dir(STATIC_SRC)) {
     if (path_delete(STATIC_SRC, true)) {
@@ -251,9 +304,9 @@ if (is_dir(STATIC_SRC)) {
 }
 
 // ============================================================
-// 步骤 8: 输出摘要
+// 步骤 9: 输出摘要
 // ============================================================
-echo "[8/8] 迁移完成\n";
+echo "[9/9] 迁移完成\n";
 
 echo "迁移结果:\n";
 echo "  www/index.php     : " . (file_exists(WWW_PATH . '/index.php') ? 'OK' : 'MISSING') . "\n";
