@@ -33,7 +33,7 @@ if (!file_exists(WWW_PATH . '/index.php')) {
 // ============================================================
 // 步骤 1: 创建 www/ 目录
 // ============================================================
-echo "[1/6] 检查 www/ 目录...\n";
+echo "[1/5] 检查 www/ 目录...\n";
 if (!is_dir(WWW_PATH)) {
     mkdir(WWW_PATH, 0755, true);
     echo "  -> 已创建 www/\n";
@@ -44,7 +44,7 @@ if (!is_dir(WWW_PATH)) {
 // ============================================================
 // 步骤 2: 迁移 static/ -> www/static/
 // ============================================================
-echo "[2/6] 检查 static/ 源目录...\n";
+echo "[2/5] 检查 static/ 源目录...\n";
 if (!is_dir(STATIC_SRC)) {
     echo "  -> static/ 不存在，跳过迁移\n";
 } elseif (is_dir(STATIC_DST) && count(scandir(STATIC_DST)) > 2) {
@@ -103,7 +103,7 @@ if (!is_dir(STATIC_SRC)) {
 // ============================================================
 // 步骤 3: 迁移后台静态资源 -> www/static/admin/
 // ============================================================
-echo "[3/6] 迁移后台静态资源...\n";
+echo "[3/5] 迁移后台静态资源...\n";
 
 // 需要迁移的静态资源目录
 $adminStaticDirs = array('css', 'js', 'layui', 'font-awesome', 'images');
@@ -165,7 +165,7 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
 // ============================================================
 // 步骤 4: 替换模板中的 {APP_THEME_DIR} 为 /static/admin/
 // ============================================================
-echo "[4/6] 替换模板中的 {APP_THEME_DIR}...\n";
+echo "[4/5] 替换模板中的 {APP_THEME_DIR}...\n";
 
 if (!is_dir(ADMIN_VIEW_SRC)) {
     echo "  -> apps/admin/view/default 不存在，跳过替换\n";
@@ -197,34 +197,9 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
 }
 
 // ============================================================
-// 步骤 5: 创建软链接（可选，兼容旧入口）
+// 步骤 5: 完成
 // ============================================================
-echo "[5/6] 检查旧入口兼容性...\n";
-if (is_dir(STATIC_DST) && !is_dir(STATIC_SRC)) {
-    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-        exec('mklink /J "' . STATIC_SRC . '" "' . STATIC_DST . '" 2>&1', $output, $ret);
-        if ($ret === 0) {
-            echo "  -> 已创建目录联接 static/ -> www/static/ (Windows)\n";
-        } else {
-            echo "  -> [WARN] 创建目录联接失败，请手动创建: mklink /J static www\\static\n";
-        }
-    } else {
-        if (symlink(STATIC_DST, STATIC_SRC)) {
-            echo "  -> 已创建符号链接 static/ -> www/static/ (Linux)\n";
-        } else {
-            echo "  -> [WARN] 创建符号链接失败，请手动创建: ln -s www/static static\n";
-        }
-    }
-} elseif (is_dir(STATIC_SRC) && is_dir(STATIC_DST)) {
-    echo "  -> static/ 和 www/static/ 均存在，跳过软链接\n";
-} else {
-    echo "  -> 状态正常\n";
-}
-
-// ============================================================
-// 步骤 6: 完成
-// ============================================================
-echo "[6/6] 迁移完成\n";
+echo "[5/5] 迁移完成\n";
 
 echo "\n=== 迁移摘要 ===\n";
 echo "  www/static/       : " . (is_dir(STATIC_DST) ? '已就绪' : '未创建') . "\n";
