@@ -6,8 +6,9 @@
  *   1. 从附属目录复制新入口文件和修改后的核心文件
  *   2. 移动 static/ 到 www/static/
  *   3. 移动后台静态资源到 www/static/admin/
- *   4. 替换模板中的 {APP_THEME_DIR}
- *   5. 删除旧入口文件
+ *   4. 移动 ueditor 到 www/static/admin/ueditor/
+ *   5. 替换模板中的 {APP_THEME_DIR} 和 {CORE_DIR}/extend/ueditor
+ *   6. 删除旧入口文件
  *
  * 使用方法：
  *   php script/migrate_www.php
@@ -27,13 +28,15 @@ define('STATIC_SRC', ROOT_PATH . '/static');
 define('STATIC_DST', WWW_PATH . '/static');
 define('ADMIN_VIEW_SRC', ROOT_PATH . '/apps/admin/view/default');
 define('ADMIN_STATIC_DST', WWW_PATH . '/static/admin');
+define('UEDITOR_SRC', ROOT_PATH . '/core/extend/ueditor');
+define('UEDITOR_DST', WWW_PATH . '/static/admin/ueditor');
 
 echo "=== DoyeCMS 入口迁移脚本 ===\n\n";
 
 // ============================================================
 // 步骤 0: 检查迁移状态
 // ============================================================
-echo "[0/7] 检查迁移状态...\n";
+echo "[0/8] 检查迁移状态...\n";
 if (file_exists(WWW_PATH . '/index.php')) {
     echo "  -> www/index.php 已存在，已迁移，退出\n";
     exit(0);
@@ -42,7 +45,7 @@ if (file_exists(WWW_PATH . '/index.php')) {
 // ============================================================
 // 步骤 1: 从附属目录复制文件
 // ============================================================
-echo "[1/7] 从附属目录复制文件...\n";
+echo "[1/8] 从附属目录复制文件...\n";
 
 $copyMap = array(
     SCRIPT_DIR . '/www/index.php' => WWW_PATH . '/index.php',
@@ -72,7 +75,7 @@ foreach ($copyMap as $src => $dst) {
 // ============================================================
 // 步骤 2: 移动 static/ -> www/static/
 // ============================================================
-echo "[2/7] 移动 static/ -> www/static/...\n";
+echo "[2/8] 移动 static/ -> www/static/...\n";
 
 if (!is_dir(STATIC_SRC)) {
     echo "  -> static/ 不存在，跳过\n";
@@ -112,7 +115,7 @@ if (!is_dir(STATIC_SRC)) {
 // ============================================================
 // 步骤 3: 移动后台静态资源
 // ============================================================
-echo "[3/7] 移动后台静态资源...\n";
+echo "[3/8] 移动后台静态资源...\n";
 
 $adminStaticDirs = array('css', 'js', 'layui', 'font-awesome', 'images');
 
@@ -142,9 +145,29 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
 }
 
 // ============================================================
-// 步骤 4: 替换模板中的 {APP_THEME_DIR}
+// 步骤 4: 移动 ueditor -> www/static/admin/ueditor/
 // ============================================================
-echo "[4/7] 替换模板中的 {APP_THEME_DIR}...\n";
+echo "[4/8] 移动 ueditor...\n";
+
+if (!is_dir(UEDITOR_SRC)) {
+    echo "  -> core/extend/ueditor 不存在，跳过\n";
+} else {
+    $dstDir = dirname(UEDITOR_DST);
+    if (!is_dir($dstDir)) {
+        mkdir($dstDir, 0755, true);
+    }
+
+    if (rename(UEDITOR_SRC, UEDITOR_DST)) {
+        echo "  -> 已移动 core/extend/ueditor/ -> www/static/admin/ueditor/\n";
+    } else {
+        echo "  [WARN] 移动失败\n";
+    }
+}
+
+// ============================================================
+// 步骤 5: 替换模板中的 {APP_THEME_DIR} 和 {CORE_DIR}/extend/ueditor
+// ============================================================
+echo "[5/8] 替换模板变量...\n";
 
 if (!is_dir(ADMIN_VIEW_SRC)) {
     echo "  -> apps/admin/view/default 不存在，跳过\n";
@@ -158,14 +181,25 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
             continue;
         }
 
-        if (strpos($content, '{APP_THEME_DIR}') === false) {
-            continue;
+        $hasChange = false;
+
+        // 替换 {APP_THEME_DIR}
+        if (strpos($content, '{APP_THEME_DIR}') !== false) {
+            $content = str_replace('{APP_THEME_DIR}', '/static/admin', $content);
+            $hasChange = true;
         }
 
-        $newContent = str_replace('{APP_THEME_DIR}', '/static/admin', $content);
-        if (file_put_contents($file, $newContent) !== false) {
-            $replaced++;
-            echo "  -> 已替换: " . str_replace(ROOT_PATH . '/', '', $file) . "\n";
+        // 替换 {CORE_DIR}/extend/ueditor
+        if (strpos($content, '{CORE_DIR}/extend/ueditor') !== false) {
+            $content = str_replace('{CORE_DIR}/extend/ueditor', '/static/admin/ueditor', $content);
+            $hasChange = true;
+        }
+
+        if ($hasChange) {
+            if (file_put_contents($file, $content) !== false) {
+                $replaced++;
+                echo "  -> 已替换: " . str_replace(ROOT_PATH . '/', '', $file) . "\n";
+            }
         }
     }
 
@@ -173,9 +207,9 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
 }
 
 // ============================================================
-// 步骤 5: 删除旧入口文件
+// 步骤 6: 删除旧入口文件
 // ============================================================
-echo "[5/7] 删除旧入口文件...\n";
+echo "[6/8] 删除旧入口文件...\n";
 
 $oldEntryFiles = array(
     ROOT_PATH . '/index.php',
@@ -196,9 +230,9 @@ foreach ($oldEntryFiles as $file) {
 }
 
 // ============================================================
-// 步骤 6: 删除旧 static/ 目录（如仍存在）
+// 步骤 7: 删除旧 static/ 目录（如仍存在）
 // ============================================================
-echo "[6/7] 检查旧 static/ 目录...\n";
+echo "[7/8] 检查旧 static/ 目录...\n";
 
 if (is_dir(STATIC_SRC)) {
     if (path_delete(STATIC_SRC, true)) {
@@ -211,9 +245,9 @@ if (is_dir(STATIC_SRC)) {
 }
 
 // ============================================================
-// 步骤 7: 输出摘要
+// 步骤 8: 输出摘要
 // ============================================================
-echo "\n=== 迁移完成 ===\n\n";
+echo "[8/8] 迁移完成\n";
 
 echo "迁移结果:\n";
 echo "  www/index.php     : " . (file_exists(WWW_PATH . '/index.php') ? 'OK' : 'MISSING') . "\n";
