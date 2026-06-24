@@ -54,6 +54,9 @@ $copyMap = array(
     SCRIPT_DIR . '/www/api.php'   => WWW_PATH . '/api.php',
     SCRIPT_DIR . '/core/init.php' => ROOT_PATH . '/core/init.php',
     SCRIPT_DIR . '/CodeController.php' => ROOT_PATH . '/apps/admin/controller/system/CodeController.php',
+    SCRIPT_DIR . '/apps/admin/model/system/StaticService.php' => ROOT_PATH . '/apps/admin/model/system/StaticService.php',
+    SCRIPT_DIR . '/apps/admin/model/content/SpecPageStaticService.php' => ROOT_PATH . '/apps/admin/model/content/SpecPageStaticService.php',
+    SCRIPT_DIR . '/apps/admin/controller/content/SpecPageController.php' => ROOT_PATH . '/apps/admin/controller/content/SpecPageController.php',
 );
 
 foreach ($copyMap as $src => $dst) {
