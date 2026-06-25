@@ -200,9 +200,19 @@ if (!is_dir(ADMIN_VIEW_SRC)) {
             $hasChange = true;
         }
 
-        // 替换 {CORE_DIR}/code.php
+        // 替换验证码图片地址
         if (strpos($content, '{CORE_DIR}/code.php') !== false) {
             $content = str_replace('{CORE_DIR}/code.php', '{url./admin/system.Code}', $content);
+            $hasChange = true;
+        }
+
+        // 修正验证码点击刷新地址，避免生成两个 ?，并扩大随机数范围
+        if (strpos($content, "onclick=\"this.src='{url./admin/system.Code}?'+Math.round(Math.random()*10);\"") !== false) {
+            $content = str_replace(
+                "onclick=\"this.src='{url./admin/system.Code}?'+Math.round(Math.random()*10);\"",
+                "onclick=\"this.src='{url./admin/system.Code}&'+Math.round(Math.random()*10000);\"",
+                $content
+            );
             $hasChange = true;
         }
 
