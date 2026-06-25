@@ -1,0 +1,4 @@
+core/template/error.html
+core/template/success.html
+www/static/images/cry.svg
+www/static/images/smile.svg
