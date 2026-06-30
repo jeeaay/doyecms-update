@@ -1,0 +1,7 @@
+apps/admin/model/system/StaticService.php
+apps/admin/view/default/system/static.html
+apps/home/controller/ParserController.php
+core/basic/IpBlacklist.php
+core/view/Paging.php
+core/view/Parser.php
+script/migrate_www/apps/admin/model/system/StaticService.php
