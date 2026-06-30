@@ -1,0 +1,414 @@
+{include file='common/head.html'}
+
+<div class="layui-body">
+    {if([$list])}
+    <div class="layui-tab layui-tab-brief" lay-filter="tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this" lay-id="t1">黑名单列表</li>
+            <li lay-id="t2">新增黑名单</li>
+            <li lay-id="t3">规则列表</li>
+            <li lay-id="t4">新增规则</li>
+            <li lay-id="t5">基础设置</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <form action="{url./admin/IpBlacklist/index}" method="get" class="layui-form">
+                    <div class="layui-form-item nospace">
+                        <div class="layui-input-inline">
+                            {$pathinfo}
+                            <input type="text" name="keyword" value="{$keyword}" placeholder="搜索 IP / 原因 / 备注 / URI" class="layui-input">
+                        </div>
+                        <div class="layui-input-inline">
+                            <button class="layui-btn" lay-submit>搜索</button>
+                        </div>
+                    </div>
+                </form>
+
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>IP</th>
+                        <th>来源</th>
+                        <th>原因</th>
+                        <th>状态</th>
+                        <th>过期时间</th>
+                        <th>最近URI</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach $blacklists(key,value,num)}
+                    <tr>
+                        <td>[num]</td>
+                        <td>[value->ip]</td>
+                        <td>[value->source_type]</td>
+                        <td>[value->reason]</td>
+                        <td>
+                            {if($value->status)}
+                            <a href="{url./admin/IpBlacklist/mod/id/'.$value->id.'/field/status/value/0}"><i class='fa fa-toggle-on' title="点击停用"></i></a>
+                            {else}
+                            <a href="{url./admin/IpBlacklist/mod/id/'.$value->id.'/field/status/value/1}"><i class='fa fa-toggle-off' title="点击启用"></i></a>
+                            {/if}
+                        </td>
+                        <td>[value->expire_time]</td>
+                        <td>[value->last_uri]</td>
+                        <td>[value->remark]</td>
+                        <td>
+                            {fun=get_btn_del($value->id)}
+                            {fun=get_btn_mod($value->id)}
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="layui-tab-item">
+                <form action="{url./admin/IpBlacklist/add}" method="post" class="layui-form">
+                    <input type="hidden" name="formcheck" value="{$formcheck}">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">IP地址</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="ip" required lay-verify="required" placeholder="请输入单个 IP 地址，如：192.168.1.10" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">原因</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="reason" placeholder="默认 manual" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="1" title="启用" checked="checked">
+                            <input type="radio" name="status" value="0" title="停用">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">过期时间</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="expire_time" placeholder="留空为长期有效，格式：2026-06-27 12:00:00" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">备注</label>
+                        <div class="layui-input-block">
+                            <textarea name="remark" class="layui-textarea" placeholder="请输入备注"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit>立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="layui-tab-item">
+                <form action="{url./admin/IpBlacklist/index}" method="get" class="layui-form">
+                    <div class="layui-form-item nospace">
+                        <div class="layui-input-inline">
+                            {$pathinfo}
+                            <input type="text" name="rule_keyword" value="{$rule_keyword}" placeholder="搜索规则名称 / 内容 / 备注" class="layui-input">
+                        </div>
+                        <div class="layui-input-inline">
+                            <button class="layui-btn" lay-submit>搜索</button>
+                        </div>
+                    </div>
+                </form>
+
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>规则名称</th>
+                        <th>匹配方式</th>
+                        <th>规则内容</th>
+                        <th>风险等级</th>
+                        <th>状态</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {foreach $rules(key,value,num)}
+                    <tr>
+                        <td>[num]</td>
+                        <td>[value->name]</td>
+                        <td>[value->match_type]</td>
+                        <td>[value->pattern]</td>
+                        <td>[value->risk_level]</td>
+                        <td>
+                            {if($value->status)}
+                            <a href="{url./admin/IpBlacklist/modRule/id/'.$value->id.'/field/status/value/0}"><i class='fa fa-toggle-on' title="点击停用"></i></a>
+                            {else}
+                            <a href="{url./admin/IpBlacklist/modRule/id/'.$value->id.'/field/status/value/1}"><i class='fa fa-toggle-off' title="点击启用"></i></a>
+                            {/if}
+                        </td>
+                        <td>[value->description]</td>
+                        <td>
+                            {fun=get_btn('删除','layui-btn-danger','delRule',$value->id)}
+                            {fun=get_btn('修改','','modRule',$value->id)}
+                        </td>
+                    </tr>
+                    {/foreach}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="layui-tab-item">
+                <form action="{url./admin/IpBlacklist/addRule}" method="post" class="layui-form">
+                    <input type="hidden" name="formcheck" value="{$formcheck}">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">规则名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" required lay-verify="required" placeholder="请输入规则名称" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">匹配方式</label>
+                        <div class="layui-input-block">
+                            <select name="match_type">
+                                <option value="contains">包含</option>
+                                <option value="prefix">前缀</option>
+                                <option value="exact">精确</option>
+                                <option value="regex">正则</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">规则内容</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="pattern" required lay-verify="required" placeholder="如：wp-login.php 或 phpmyadmin" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="1" title="启用" checked="checked">
+                            <input type="radio" name="status" value="0" title="停用">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">备注</label>
+                        <div class="layui-input-block">
+                            <textarea name="description" class="layui-textarea" placeholder="请输入规则说明"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit>立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="layui-tab-item">
+                <form action="{url./admin/IpBlacklist/saveSettings}" method="post" class="layui-form">
+                    <input type="hidden" name="formcheck" value="{$formcheck}">
+                    <input type="hidden" name="submit" value="settings">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">缓存驱动</label>
+                        <div class="layui-input-block" style="line-height:36px;">
+                            当前驱动：{$cache_handler}
+                            {if(!$cache_supported)}
+                            <span class="layui-form-mid layui-word-aux" style="float:none;color:#FF5722;">当前 file 缓存模式不支持启用 IP 黑名单功能。</span>
+                            {/if}
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">功能总开关</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="ip_blacklist_status" value="1" {if([$settings.ip_blacklist_status]=='1')}checked="checked"{/if} title="启用">
+                            <input type="radio" name="ip_blacklist_status" value="0" {if([$settings.ip_blacklist_status]!='1')}checked="checked"{/if} title="禁用">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">自动封禁</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="ip_blacklist_auto_enable" value="1" {if([$settings.ip_blacklist_auto_enable]=='1')}checked="checked"{/if} title="启用">
+                            <input type="radio" name="ip_blacklist_auto_enable" value="0" {if([$settings.ip_blacklist_auto_enable]!='1')}checked="checked"{/if} title="禁用">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">高风险阈值</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="ip_blacklist_auto_threshold" value="{$settings.ip_blacklist_auto_threshold}" class="layui-input">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">同一 IP 在统计窗口内命中高风险路径达到此次数后拉黑</div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">统计窗口</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="ip_blacklist_auto_window" value="{$settings.ip_blacklist_auto_window}" class="layui-input">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">单位：秒，默认 86400</div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">封禁时长</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="ip_blacklist_auto_block_ttl" value="{$settings.ip_blacklist_auto_block_ttl}" class="layui-input">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">单位：秒，填 0 表示长期有效</div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit>保存设置</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {/if}
+
+    {if([$mod])}
+    <div class="layui-tab layui-tab-brief" lay-filter="tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this">黑名单修改</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <form action="{url./admin/IpBlacklist/mod/id/'.[$get.id].'}{$backurl}" method="post" class="layui-form">
+                    <input type="hidden" name="formcheck" value="{$formcheck}">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">IP地址</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="ip" value="{$blacklist->ip}" required lay-verify="required" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">原因</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="reason" value="{$blacklist->reason}" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="1" {if([$blacklist->status]==1)}checked="checked"{/if} title="启用">
+                            <input type="radio" name="status" value="0" {if([$blacklist->status]==0)}checked="checked"{/if} title="停用">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">过期时间</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="expire_time" value="{$blacklist->expire_time}" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">备注</label>
+                        <div class="layui-input-block">
+                            <textarea name="remark" class="layui-textarea">{$blacklist->remark}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit>立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                            {fun=get_btn_back()}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {/if}
+
+    {if([$rulemod])}
+    <div class="layui-tab layui-tab-brief" lay-filter="tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this">规则修改</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <form action="{url./admin/IpBlacklist/modRule/id/'.[$get.id].'}{$backurl}" method="post" class="layui-form">
+                    <input type="hidden" name="formcheck" value="{$formcheck}">
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">规则名称</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="name" value="{$rule->name}" required lay-verify="required" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">匹配方式</label>
+                        <div class="layui-input-block">
+                            <select name="match_type">
+                                <option value="contains" {if([$rule->match_type]=='contains')}selected{/if}>包含</option>
+                                <option value="prefix" {if([$rule->match_type]=='prefix')}selected{/if}>前缀</option>
+                                <option value="exact" {if([$rule->match_type]=='exact')}selected{/if}>精确</option>
+                                <option value="regex" {if([$rule->match_type]=='regex')}selected{/if}>正则</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">规则内容</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="pattern" value="{$rule->pattern}" required lay-verify="required" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">状态</label>
+                        <div class="layui-input-block">
+                            <input type="radio" name="status" value="1" {if([$rule->status]==1)}checked="checked"{/if} title="启用">
+                            <input type="radio" name="status" value="0" {if([$rule->status]==0)}checked="checked"{/if} title="停用">
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">备注</label>
+                        <div class="layui-input-block">
+                            <textarea name="description" class="layui-textarea">{$rule->description}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button class="layui-btn" lay-submit>立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                            {fun=get_btn_back()}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {/if}
+</div>
+
+{include file='common/foot.html'}
