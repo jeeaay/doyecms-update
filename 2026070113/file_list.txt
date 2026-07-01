@@ -1,0 +1,9 @@
+apps/admin/controller/system/ConfigController.php
+apps/admin/controller/system/StaticController.php
+apps/admin/controller/system/UpgradeController.php
+apps/admin/model/system/StaticService.php
+apps/admin/view/default/system/config.html
+core/basic/Kernel.php
+core/init.php
+core/view/Parser.php
+rewrite/nginx.txt

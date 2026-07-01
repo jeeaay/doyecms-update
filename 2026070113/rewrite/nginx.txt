@@ -1,0 +1,38 @@
+#请复制下面伪静态配置到nginx配置文件中：
+#规则适合DoyeCMS V3.0+版本
+
+if ($request_uri ~ ^/(config|data|doc|rewrite|runtime|\.git|script)/.*) {
+  	return 403;
+}
+if ($request_uri ~ ^/core/.*\.(rar|zip|gz|tar|7z|xz|bz2|bak|sqlite|db|db2)) {
+  	return 403;
+}
+if ($request_uri ~ ^/(static|apps|template)/.*\.(php|html|htm|rar|zip|gz|tar|7z|xz|bz2|bak|sqlite|db|db2)) {
+  	return 403;
+}
+if ($request_uri ~ ^/admin\.php.*) {
+  	return 403;
+}
+location ~ ^/\.[^/]+ {
+    return 403;
+}
+if ($request_uri ~* ".*(\{|%7b)pboot.*") {
+    return 403; 
+}
+if ($request_uri ~ ^/wp\-.*) {
+    return 403; 
+}
+if ($request_uri ~* ".*\.(sql|tar|7z|sh|sqlite|db|db2)") {
+    return 403; 
+}
+location ~* /core/extend/ueditor/dialogs/.*\.(php|php5|phtml|php7|php8)$ {
+    deny all;
+}
+
+
+location / {
+	 if (!-e $request_filename){
+	    	rewrite ^/index.php(.*)$ /index.php?p=$1 last;
+            	rewrite ^(.*)$ /index.php?s=$1 last;
+	 }
+}
