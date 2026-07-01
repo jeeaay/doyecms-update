@@ -1,1 +1,3 @@
 .env.sample
+apps/admin/view/default/common/head.html
+script/create_update.py
