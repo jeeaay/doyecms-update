@@ -1,3 +1,7 @@
 .env.sample
+apps/admin/model/content/SpecPageStaticService.php
+apps/admin/model/system/StaticService.php
 apps/admin/view/default/common/head.html
+core/view/Parser.php
 script/create_update.py
+script/migrate_www/apps/admin/model/content/SpecPageStaticService.php
