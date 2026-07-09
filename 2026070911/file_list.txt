@@ -1,1 +1,2 @@
+apps/home/controller/IndexController.php
 apps/home/controller/ParserController.php
